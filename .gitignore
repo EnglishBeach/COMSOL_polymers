@@ -1,3 +1,4 @@
 Comsol/Laplace/**
 Comsol/COMSOLE Gallery/**
 **_env
+**/__pycache__
