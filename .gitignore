@@ -2,3 +2,7 @@ Comsol/Laplace/**
 Comsol/COMSOLE Gallery/**
 **_env
 **/__pycache__
+Batch/system_batch.log
+Batch/System_batch.mph.recovery
+Batch/System_batch.mph.status
+Batch/Solves/**
