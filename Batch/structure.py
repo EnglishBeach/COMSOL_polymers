@@ -5,6 +5,7 @@ database_connection = pe.MySQLDatabase('comsol_solves',
                                        password='',
                                        autoconnect=False)
 
+path = r'D:\WORKS\COMSOL_polymers'
 
 class BaseModel(pe.Model):
 
