@@ -1,49 +1,54 @@
-import peewee as pe
+from peewee import MySQLDatabase
 
-database_connection = pe.MySQLDatabase('comsol_solves',
-                                       user='root',
-                                       password='',
-                                       autoconnect=False)
+from peewee import Model,CharField,DateTimeField,datetime, DecimalField,ForeignKeyField
+from playhouse.mysql_ext import JSONField
 
-path = r'D:\WORKS\COMSOL_polymers'
+database_connection = MySQLDatabase(
+    'comsol_solves',
+    user='root',
+    password='',
+    autoconnect=False,
+)
 
-class BaseModel(pe.Model):
+
+class BaseModel(Model):
 
     class Meta:
         database = database_connection
 
 
 class Solves(BaseModel):
-    name = pe.CharField()
-    date = pe.DateTimeField(default=pe.datetime.datetime.now)
-    description = pe.CharField(100)
+    name = CharField()
+    date = DateTimeField(default=datetime.datetime.now)
+    description = CharField(100, null=True)
 
 
-class Coefs(BaseModel):
-    solve = pe.ForeignKeyField(Solves,
-                               related_name='fk_solves',
-                               on_delete='cascade',
-                               on_update='cascade')
-    type = pe.CharField(10),
-    value = pe.DecimalField()
+class Consts(BaseModel):
+    solve = ForeignKeyField(
+        Solves,
+        related_name='fk_solves',
+        on_delete='cascade',
+        on_update='cascade',
+    )
+    key = CharField(10)
+    value = DecimalField()
 
 
 class Functions(BaseModel):
 
-    # class Meta:
-    #     primary_key = False
-
-    solve = pe.ForeignKeyField(Solves,
-                               related_name='fk_solves',
-                               on_delete='cascade',
-                               on_update='cascade')
-    name = pe.CharField(10),
-    time = pe.DecimalField(),
-    value = pe.DecimalField(),
+    solve = ForeignKeyField(
+        Solves,
+        related_name='fk_solves',
+        on_delete='cascade',
+        on_update='cascade',
+    )
+    data = JSONField(null=False)
+    # time = DecimalField()
+    # value = DecimalField()
 
 
 if __name__ == '__main__':
     with database_connection:
-        classes = [Solves, Coefs, Functions]
-        database_connection.drop_tables(classes)
-        database_connection.create_tables(classes)
+        tables = [Consts, Functions, Solves]
+        database_connection.drop_tables(tables)
+        database_connection.create_tables(tables)
