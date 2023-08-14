@@ -17,38 +17,36 @@ class BaseModel(Model):
         database = database_connection
 
 
-class Solves(BaseModel):
-    name = CharField()
+class Solve(BaseModel):
+    name = CharField(20)
     date = DateTimeField(default=datetime.datetime.now)
-    description = CharField(100, null=True)
+    desc = CharField(100, null=True)
 
 
-class Consts(BaseModel):
+class Const(BaseModel):
     solve = ForeignKeyField(
-        Solves,
+        Solve,
         related_name='fk_solves',
         on_delete='cascade',
         on_update='cascade',
     )
-    key = CharField(10)
-    value = DecimalField()
+    name = CharField(10)
+    value = DecimalField(max_digits=20,decimal_places=5)
 
 
-class Functions(BaseModel):
+class FuncData(BaseModel):
 
     solve = ForeignKeyField(
-        Solves,
+        Solve,
         related_name='fk_solves',
         on_delete='cascade',
         on_update='cascade',
     )
     data = JSONField(null=False)
-    # time = DecimalField()
-    # value = DecimalField()
 
 
 if __name__ == '__main__':
     with database_connection:
-        tables = [Consts, Functions, Solves]
+        tables = [Const, FuncData, Solve]
         database_connection.drop_tables(tables)
         database_connection.create_tables(tables)
