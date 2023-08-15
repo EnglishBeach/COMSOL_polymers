@@ -21,6 +21,7 @@ class Solve(BaseModel):
     name = CharField(20)
     date = DateTimeField(default=datetime.datetime.now)
     desc = CharField(100, null=True)
+    data = JSONField(null=False)
 
 
 class Const(BaseModel):
@@ -34,19 +35,10 @@ class Const(BaseModel):
     value = DecimalField(max_digits=20,decimal_places=5)
 
 
-class FuncData(BaseModel):
-
-    solve = ForeignKeyField(
-        Solve,
-        related_name='fk_solves',
-        on_delete='cascade',
-        on_update='cascade',
-    )
-    data = JSONField(null=False)
 
 
 if __name__ == '__main__':
     with database_connection:
-        tables = [Const, FuncData, Solve]
+        tables = [Const, Solve]
         database_connection.drop_tables(tables)
         database_connection.create_tables(tables)
