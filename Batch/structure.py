@@ -3,7 +3,7 @@ from peewee import MySQLDatabase
 from peewee import Model,CharField,DateTimeField,datetime, DecimalField,ForeignKeyField
 from playhouse.mysql_ext import JSONField
 
-database_connection = MySQLDatabase(
+db = MySQLDatabase(
     'comsol_solves',
     user='root',
     password='',
@@ -14,7 +14,7 @@ database_connection = MySQLDatabase(
 class BaseModel(Model):
 
     class Meta:
-        database = database_connection
+        database = db
 
 
 class Solve(BaseModel):
@@ -38,7 +38,7 @@ class Const(BaseModel):
 
 
 if __name__ == '__main__':
-    with database_connection:
+    with db:
         tables = [Const, Solve]
-        database_connection.drop_tables(tables)
-        database_connection.create_tables(tables)
+        db.drop_tables(tables)
+        db.create_tables(tables)

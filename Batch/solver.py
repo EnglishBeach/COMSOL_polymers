@@ -2,7 +2,7 @@ import os as _os
 from tqdm import tqdm as _tqdm
 import pandas as _pd
 
-from structure import Const, Solve, database_connection
+from structure import Const, Solve, db
 
 # Default configs
 DIR_PATH = r'D:\WORKS\COMSOL_polymers'
@@ -74,7 +74,7 @@ def write(name, desc, df):
     name = check(name)
     desc = check(desc)
 
-    with database_connection:
+    with db:
         i = 0
         groups = _tqdm(iterable=df.groupby(by=CONST_LIGHT_LIST))
         for const_values, frame in groups:
