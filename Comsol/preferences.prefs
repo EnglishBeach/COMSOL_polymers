@@ -1,4 +1,4 @@
-#Thu Jun 08 22:10:19 MSK 2023
+#Wed Sep 06 10:45:43 MSK 2023
 applicationbuilder.desktop.windows=off
 applicationbuilder.editors.max_editors=15
 applicationbuilder.editors.max_editorsactive=on
@@ -50,7 +50,7 @@ email.smtp.host=
 email.smtp.port=25
 email.smtp.security=none
 email.smtp.user=
-file.defaultlocations.all=D\:\\Works\\PolimerSolve\\Comsol
+file.defaultlocations.all=D\:\\Works\\COMSOL_polymers\\Comsol
 file.recent.migr=on
 formeditor.indicators.hasmethods=off
 formeditor.layout.layoutmode=sketch
@@ -175,7 +175,7 @@ general.custom.print.unit=mm
 general.custom.print.width=120
 general.custom.print.zoomextents=off
 general.custom.quickaccessabove=on
-general.custom.quickaccessitems=application_run_application,undo,redo,find,open_application_editor,resethistory,revert,saveasversion
+general.custom.quickaccessitems=application_run_application,undo,redo,find,resethistory,revert,saveasversion,open_application_editor,activate_model_builder
 general.custom.rectangularcomplex=on
 general.custom.scientificnotation=on
 general.custom.showaddinsrootpanel=on
