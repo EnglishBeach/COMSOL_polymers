@@ -19,9 +19,11 @@ class Solve(BaseModel):
     class Meta:
         table_name = 'solve'
 
+class Const(BaseModel):
+    name = CharField()
+    solve = ForeignKeyField(column_name='solve_id', field='id', model=Solve)
+    value = DecimalField()
 
-if __name__ == '__main__':
-    with db:
-        tables = [Const, Solve]
-        db.drop_tables(tables)
-        db.create_tables(tables)
+    class Meta:
+        table_name = 'const'
+
