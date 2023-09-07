@@ -3,6 +3,10 @@ from peewee import MySQLDatabase
 from peewee import Model,CharField,DateTimeField,datetime, DecimalField,ForeignKeyField
 from playhouse.mysql_ext import JSONField
 
+# TODO: do beauty
+# to export structure
+# pwiz -H localhost -u root -e mysql comsol_solves>structure.py
+
 db = MySQLDatabase(
     'comsol_solves',
     user='root',
@@ -23,57 +27,22 @@ class Solve(BaseModel):
     date = DateTimeField(default=datetime.datetime.now)
     data = JSONField(null=False)
 
-    ke = DecimalField(max_digits=20,
-                      decimal_places=5,
-                      column_name='Ke',
-                      default=0)
-    kh = DecimalField(max_digits=20,
-                      decimal_places=5,
-                      column_name='KH',
-                      default=0)
-    kr = DecimalField(max_digits=20,
-                      decimal_places=5,
-                      column_name='Kr',
-                      default=0)
-    kdisp = DecimalField(max_digits=20,
-                         decimal_places=5,
-                         column_name='Kdisp',
-                         default=0)
-    kqh = DecimalField(max_digits=20,
-                       decimal_places=5,
-                       column_name='KqH',
-                       default=0)
-    ks = DecimalField(max_digits=20,
-                      decimal_places=5,
-                      column_name='Ks',
-                      default=0)
-    kd = DecimalField(max_digits=20,
-                      decimal_places=5,
-                      column_name='Kd',
-                      default=0)
-    kc = DecimalField(max_digits=20,
-                      decimal_places=5,
-                      column_name='Kc',
-                      default=0)
-    kp = DecimalField(max_digits=20,
-                      decimal_places=5,
-                      column_name='Kp',
-                      default=0)
-    krd = DecimalField(max_digits=20,
-                       decimal_places=5,
-                       column_name='KrD',
-                       default=0)
-    kph = DecimalField(max_digits=20,
-                       decimal_places=5,
-                       column_name='Kph',
-                       default=0)
-    light = DecimalField(max_digits=20,
-                         decimal_places=5,
-                         column_name='light',
-                         default=100)
+    Ke = DecimalField(max_digits=20, decimal_places=5, default=0)
+    KH = DecimalField(max_digits=20, decimal_places=5, default=0)
+    Kr = DecimalField(max_digits=20, decimal_places=5, default=0)
+    Kdisp = DecimalField(max_digits=20, decimal_places=5, default=0)
+    KqH = DecimalField(max_digits=20, decimal_places=5, default=0)
+    Ks = DecimalField(max_digits=20, decimal_places=5, default=0)
+    Kd = DecimalField(max_digits=20, decimal_places=5, default=0)
+    Kc = DecimalField(max_digits=20, decimal_places=5, default=0)
+    Kp = DecimalField(max_digits=20, decimal_places=5, default=0)
+    KrD = DecimalField(max_digits=20, decimal_places=5, default=0)
+    Kph = DecimalField(max_digits=20, decimal_places=5, default=0)
+    light = DecimalField(max_digits=20, decimal_places=5, default=0)
 
     class Meta:
         table_name = 'solve'
+
 
 # FIXME: update not delete
 if __name__ == '__main__':
