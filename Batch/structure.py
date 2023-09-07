@@ -32,9 +32,7 @@ class Const(BaseModel):
         on_update='cascade',
     )
     name = CharField(10)
-    value = DecimalField(max_digits=20,decimal_places=5)
-
-
+    value = DecimalField(max_digits=20, decimal_places=5)
 
 
 if __name__ == '__main__':
