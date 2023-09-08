@@ -17,62 +17,68 @@ def model_parametrs(model: _mph.Model, changed_params: dict = {}):
     return model.parameters()
 
 
-def evaluate_species(model: _mph.Model, outer_numbers, comsol_dataset='Data'):
+def evaluate_species(
+    model: _mph.Model,
+    outer_number,
+    expresions: list = [],
+    comsol_dataset='Data',
+):
     reaction_node = model / 'physics' / 'Reaction Engineering'
     _reaction_node_children = [i.name() for i in reaction_node.children()]
 
-    species = _re.findall(
-        string='\n'.join(_reaction_node_children),
-        pattern='Species: (.*)',
+    if expresions ==[]:
+        expresions = _re.findall(
+            string='\n'.join(_reaction_node_children),
+            pattern='Species: (.*)',
+        )
+        comsol_expressions = ['reaction.c_' + specie for specie in expresions]
+    else:
+        comsol_expressions = expresions
+
+    row_data = model.evaluate(
+        ['t'] + comsol_expressions,
+        dataset=comsol_dataset,
+        outer=outer_number,
     )
-    species_concentration_names = ['reaction.c_' + specie for specie in species]
 
-    if not isinstance(outer_numbers,list):outer_numbers  = [outer_numbers]
-
-    df = _pd.DataFrame(columns=['Time'] + species+['light'])
-    for outer_number in outer_numbers:
-        row_data = model.evaluate(
-            ['t'] + species_concentration_names,
-            dataset=comsol_dataset,
-            outer=outer_number,
-        )
-        temp_df = _pd.DataFrame(row_data, columns=['Time'] + species)
-        temp_df['light']= model.outer(comsol_dataset)[1][outer_number-1]
-
-        df = _pd.concat([df,temp_df])
-
-    return df
-
-def sweep(
-    model: _mph.Model,
-    variable_params,
-    name=None,
-    desc=None,
-):
-    name = check(name)
-    desc = check(desc)
-
-    params_list = _tqdm(iterable=variable_params)
-
-    i = 0
-    for changed_params in params_list:
-        model_parametrs(
-            model=model,
-            changed_params=changed_params,
-        )
-        model.clear()
-        params_list.set_description('{:10}'.format('Solving...'))
-        model.solve()
-        params_list.set_description('{:10}'.format('Saving...'))
-        solves_to_sql(
-            model=model,
-            name=name + f'#{i}',
-            desc=desc,
-        )
-        i += 1
+    return _pd.DataFrame(row_data, columns=['Time'] + expresions)
 
 
 # SQL
+
+
+def get_solves(conditious):
+    string = 'select * from solve \n where \n'
+    for key, diap in conditious.items():
+        string += f'{diap[0]} <= {key} and {key} <= {diap[1]} \n and \n'
+
+    querry = string[:-8]
+
+    with db:
+        columns = [i.name for i in db.get_columns('solve')]
+        # columns.remove('data')
+        cursor = db.execute_sql(querry)
+        result = cursor.fetchall()
+    df = _pd.DataFrame(columns=columns, data=result)
+
+    datas = df['data']
+    data_df_list = []
+    for data in datas:
+        data_df_list.append(_pd.read_json(data[1:-1].replace('\\', '')))
+
+    del df['data']
+    return df, data_df_list
+
+
+def solve_to_sql(df, params: dict, name, desc=None):
+    note = params.copy()
+    note['name'] = name
+    note['desc'] = desc
+    note['data'] = df.to_json(index=True)
+    with db:
+        Solve.insert(note).execute()
+
+
 # TODO: logs
 def solves_to_sql(
     model: _mph.Model,
@@ -105,36 +111,33 @@ def solves_to_sql(
         Solve.insert_many(notes).execute()
 
 
-def solve_to_sql(df, params: dict, name, desc=None):
-    note = params.copy()
-    note['name'] = name
-    note['desc'] = desc
-    note['data'] = df.to_json(index=True)
-    with db:
-        Solve.insert(note).execute()
+def sweep(
+    model: _mph.Model,
+    variable_params,
+    name=None,
+    desc=None,
+):
+    name = check(name)
+    desc = check(desc)
 
+    params_list = _tqdm(iterable=variable_params)
 
-def get_solves(conditious):
-    string = 'select * from pivot \n where \n'
-    for key, diap in conditious.items():
-        string += f'{diap[0]} <= {key} and {key} <= {diap[1]} \n and \n'
-
-    querry = string[:-8]
-
-    with db:
-        columns = [i.name for i in db.get_columns('pivot')]
-        # columns.remove('data')
-        cursor = db.execute_sql(querry)
-        result = cursor.fetchall()
-    df = _pd.DataFrame(columns=columns, data=result)
-
-    datas = df['data']
-    data_df_list = []
-    for data in datas:
-        data_df_list.append(_pd.read_json(data[1:-1].replace('\\', '')))
-
-    del df['data']
-    return df, data_df_list
+    i = 0
+    for changed_params in params_list:
+        model_parametrs(
+            model=model,
+            changed_params=changed_params,
+        )
+        model.clear()
+        params_list.set_description('{:10}'.format('Solving...'))
+        model.solve()
+        params_list.set_description('{:10}'.format('Saving...'))
+        solves_to_sql(
+            model=model,
+            name=name + f'#{i}',
+            desc=desc,
+        )
+        i += 1
 
 
 # To plots
