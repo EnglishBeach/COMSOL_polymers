@@ -19,7 +19,7 @@ def model_parametrs(model: _mph.Model, changed_params: dict = {}):
 
 def evaluate_species(
     model: _mph.Model,
-    outer_number,
+    outer_number=1,
     expresions: list = [],
     comsol_dataset='Data',
 ):
@@ -45,8 +45,6 @@ def evaluate_species(
 
 
 # SQL
-
-
 def get_solves(conditious):
     string = 'select * from solve \n where \n'
     for key, diap in conditious.items():
@@ -141,6 +139,15 @@ def sweep(
 
 
 # To plots
+def collect_dfs(datas,dfs,diap):
+    result=_pd.DataFrame()
+    for i in range(len(datas)):
+        df= dfs[i]
+        params = datas.loc[i][diap]
+        df[diap] =list(params)
+        result=_pd.concat([result,df])
+    return result
+
 def flat2image(
     x: _np.ndarray,
     y: _np.ndarray,
