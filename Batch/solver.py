@@ -107,8 +107,8 @@ def solves_to_sql(
 
         i += 1
 
-    with db:
-        Solve.insert_many(notes).execute()
+    assert db.is_connection_usable(), 'Database not connected'
+    Solve.insert_many(notes).execute()
 
 
 def sweep(
