@@ -7,41 +7,10 @@ import mph as _mph
 from itertools import product as _product
 from scipy.interpolate import RBFInterpolator as _RBFInterpolator
 from scipy.interpolate import griddata as _griddata
-from structure import Solve, db
+from db_structure import Solve, db
 
 
-# Evaluating
-def model_parametrs(model: _mph.Model, changed_params: dict = {}):
-    for key, value in changed_params.items():
-        model.parameter(name=key, value=value)
-    return model.parameters()
 
-
-def evaluate_species(
-    model: _mph.Model,
-    outer_number=1,
-    expresions: list = [],
-    comsol_dataset='Data',
-):
-    reaction_node = model / 'physics' / 'Reaction Engineering'
-    _reaction_node_children = [i.name() for i in reaction_node.children()]
-
-    if expresions ==[]:
-        expresions = _re.findall(
-            string='\n'.join(_reaction_node_children),
-            pattern='Species: (.*)',
-        )
-        comsol_expressions = ['reaction.c_' + specie for specie in expresions]
-    else:
-        comsol_expressions = expresions
-
-    row_data = model.evaluate(
-        ['t'] + comsol_expressions,
-        dataset=comsol_dataset,
-        outer=outer_number,
-    )
-
-    return _pd.DataFrame(row_data, columns=['Time'] + expresions)
 
 
 # SQL
@@ -54,7 +23,6 @@ def get_solves(conditious):
 
     with db:
         columns = [i.name for i in db.get_columns('solve')]
-        # columns.remove('data')
         cursor = db.execute_sql(querry)
         result = cursor.fetchall()
     df = _pd.DataFrame(columns=columns, data=result)
@@ -78,7 +46,7 @@ def solve_to_sql(df, params: dict, name, desc=None):
 
 
 # TODO: logs
-def solves_to_sql(
+def sweep_to_sql(
     model: _mph.Model,
     name,
     desc=None,
@@ -88,7 +56,7 @@ def solves_to_sql(
     params = {
         key: float(value)
         for key,
-        value in model.parameters().items()
+        value in model_parameters(model).items()
         if 'light' not in key
     }
     params['name'] = name
@@ -99,7 +67,7 @@ def solves_to_sql(
         note = {}
         note.update(params)
         note['light'] = light_value
-        df = evaluate_species(model, i)
+        df = evaluate_expressions(model, i)
         note['data'] = df.to_json(index=True)
         notes.append(note)
 
@@ -111,26 +79,26 @@ def solves_to_sql(
 
 def sweep(
     model: _mph.Model,
-    variable_params,
+    tuning_params,
     name=None,
     desc=None,
 ):
-    name = check(name)
-    desc = check(desc)
+    name = input_check(name)
+    desc = input_check(desc)
 
-    params_list = _tqdm(iterable=variable_params)
+    tuning_list = _tqdm(iterable=tuning_params)
 
     i = 0
-    for changed_params in params_list:
+    for changed_params in tuning_list:
         model_parametrs(
             model=model,
             changed_params=changed_params,
         )
         model.clear()
-        params_list.set_description('{:10}'.format('Solving...'))
+        tuning_list.set_description('{:10}'.format('Solving...'))
         model.solve()
-        params_list.set_description('{:10}'.format('Saving...'))
-        solves_to_sql(
+        tuning_list.set_description('{:10}'.format('Saving...'))
+        sweep_to_sql(
             model=model,
             name=name + f'#{i}',
             desc=desc,
@@ -147,47 +115,6 @@ def collect_dfs(datas,dfs,diap):
         df[diap] =list(params)
         result=_pd.concat([result,df])
     return result
-
-def flat2image(
-    x: _np.ndarray,
-    y: _np.ndarray,
-    z: _np.ndarray,
-    method='linear',
-    grid_points=11,
-    **kwargs,
-):
-    xi = _np.linspace(x.min(), x.max(), grid_points)
-    yi = _np.linspace(y.min(), y.max(), grid_points)
-    X, Y = _np.meshgrid(xi, yi)
-    if method in ['linear', 'cubic', 'nearest']:
-        Z = _griddata(
-            points=(x, y),
-            values=z,
-            xi=(X, Y),
-            method=method,
-            **kwargs,
-        )
-
-    elif method == 'rbf':
-        XYi = _np.stack((X, Y))
-        XY_line = XYi.reshape(2, -1).T
-
-        interpol = _RBFInterpolator(
-            _np.vstack((x, y)).T,
-            z,
-            **kwargs,
-        )
-        Z = interpol(XY_line).reshape(grid_points, grid_points)
-
-    return X, Y, Z
-
-
-def check(string):
-    if string is None:
-        while string != 'q':
-            string = input(f'Set {string=}, to quit - q:')
-            string = string.strip()
-    return string
 
 
 def combinations_dict(diap: dict):
