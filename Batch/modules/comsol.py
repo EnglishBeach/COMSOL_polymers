@@ -1,43 +1,49 @@
 import pandas as _pd
-import numpy as _np
 import re as _re
-from tqdm import tqdm as _tqdm
 import mph as _mph
 
-from scipy.interpolate import RBFInterpolator as _RBFInterpolator
-from scipy.interpolate import griddata as _griddata
+
+def compare(from_node: _mph.Node, to_node: _mph.Node):
+    from_properties, to_properties = from_node.properties(), to_node.properties()
+    all_properties = sorted(set(from_properties).union(set(to_properties)))
+
+    print(f"{'from ' + from_node.name(): >53} | {'to '+to_node.name(): <53}")
+    for key in all_properties:
+        from_prop = str(from_properties.get(key, None))
+        to_prop = str(to_properties.get(key, None))
+
+        string = f'{"*" if (from_prop!=to_prop) else " "} {key: <30} '+\
+                 f'{from_prop[:20]: <20} | {to_prop[:20]: <20}'
+        print(string)
 
 
-def model_parametrs(model: _mph.Model, changed_params: dict = {}):
-    for key, value in changed_params.items():
-        model.parameter(name=key, value=value)
-    return model.parameters()
+def copy_settings(from_node: _mph.Node, to_node: _mph.Node):
+    for i in range(2):
+        from_properties, to_properties = from_node.properties(), to_node.properties()
+
+        auto_settings = {}
+        for key, value in from_properties.items():
+            if (str(value) == 'auto') or (to_properties.get(key, None) is None):
+                auto_settings.update({key: value})
+                continue
+
+            to_node.property(name=key, value=value)
+
+        for key, value in auto_settings.items():
+            if to_properties.get(key, None) is None: continue
+            to_node.property(name=key, value=value)
 
 
-def evaluate_expressions(
-    model: _mph.Model,
-    outer_number=1,
-    expresions: list = [],
-    comsol_dataset='Data',
-):
-    reaction_node = model / 'physics' / 'Reaction Engineering'
-    _reaction_node_children = [i.name() for i in reaction_node.children()]
+def copy_solver(from_solver: _mph.Node, to_solver: _mph.Node, verbose=False):
+    copy_settings(from_solver, to_solver)
 
-    if expresions ==[]:
-        expresions = _re.findall(
-            string='\n'.join(_reaction_node_children),
-            pattern='Species: (.*)',
-        )
-        comsol_expressions = ['reaction.c_' + specie for specie in expresions]
-    else:
-        comsol_expressions = expresions
+    from_dict = {node.name(): node for node in from_solver.children()}
+    to_dict = {node.name(): node for node in to_solver.children()}
 
-    row_data = model.evaluate(
-        ['t'] + comsol_expressions,
-        dataset=comsol_dataset,
-        outer=outer_number,
-    )
-
-    return _pd.DataFrame(row_data, columns=['Time'] + expresions)
-
-
+    for node in from_dict:
+        from_node = from_dict[node]
+        to_node = to_dict[node]
+        copy_settings(from_node, to_node)
+        if verbose:
+            compare(from_node, to_node)
+            print('*' * 120)
