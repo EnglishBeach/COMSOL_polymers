@@ -1,7 +1,21 @@
 import numpy as _np
+import plotly.express as _px
 
 from scipy.interpolate import griddata as _griddata
 from scipy.interpolate import RBFInterpolator as _RBFInterpolator
+
+
+def simple_temporal_plot(df, y):
+    fig = _px.line(df, x='time', y=y,)
+    fig.update_layout(
+        height=500,
+        margin={
+            'r': 0, 'l': 0, 't': 0, 'b': 0
+        },
+        legend=dict(x=-0.1, y=1, xanchor="center"),
+    )
+    return fig
+
 
 def flat2image(
     x: _np.ndarray,
