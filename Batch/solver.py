@@ -4,47 +4,6 @@ import re as _re
 from tqdm import tqdm as _tqdm
 import mph as _mph
 
-from itertools import product as _product
-from scipy.interpolate import RBFInterpolator as _RBFInterpolator
-from scipy.interpolate import griddata as _griddata
-from db_structure import Solve, db
-
-
-
-
-
-# SQL
-def get_solves(conditious):
-    string = 'select * from solve \n where \n'
-    for key, diap in conditious.items():
-        string += f'{diap[0]} <= {key} and {key} <= {diap[1]} \n and \n'
-
-    querry = string[:-8]
-
-    with db:
-        columns = [i.name for i in db.get_columns('solve')]
-        cursor = db.execute_sql(querry)
-        result = cursor.fetchall()
-    df = _pd.DataFrame(columns=columns, data=result)
-
-    datas = df['data']
-    data_df_list = []
-    for data in datas:
-        data_df_list.append(_pd.read_json(data[1:-1].replace('\\', '')))
-
-    del df['data']
-    return df, data_df_list
-
-
-def solve_to_sql(df, params: dict, name, desc=None):
-    note = params.copy()
-    note['name'] = name
-    note['desc'] = desc
-    note['data'] = df.to_json(index=True)
-    with db:
-        Solve.insert(note).execute()
-
-
 # TODO: logs
 def sweep_to_sql(
     model: _mph.Model,
@@ -104,22 +63,3 @@ def sweep(
             desc=desc,
         )
         i += 1
-
-
-# To plots
-def collect_dfs(datas,dfs,diap):
-    result=_pd.DataFrame()
-    for i in range(len(datas)):
-        df= dfs[i]
-        params = datas.loc[i][diap]
-        df[diap] =list(params)
-        result=_pd.concat([result,df])
-    return result
-
-
-def combinations_dict(diap: dict):
-    keys = list(diap.keys())
-    values = [diap[key] for key in keys]
-    combinations = list(_product(*values))
-    result = [dict(zip(keys, comb)) for comb in combinations]
-    return result
