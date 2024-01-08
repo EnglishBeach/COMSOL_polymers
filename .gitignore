@@ -1,3 +1,14 @@
 Comsol/Laplace/**
 Comsol/COMSOLE Gallery/**
+<<<<<<< HEAD
 **_env
+=======
+**_env
+**/__pycache__
+Batch/system_batch.log
+Batch/System_batch.mph.recovery
+Batch/System_batch.mph.status
+Batch/Solves/**
+Find/Data.csv
+Find/Data2.csv
+>>>>>>> dev
