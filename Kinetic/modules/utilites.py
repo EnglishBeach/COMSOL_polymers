@@ -8,16 +8,7 @@ from scipy.interpolate import griddata as _griddata
 from scipy.interpolate import RBFInterpolator as _RBFInterpolator
 
 
-def simple_temporal_plot(df, y):
-    fig = _px.line(df, x='time', y=y,)
-    fig.update_layout(
-        height=500,
-        margin={
-            'r': 0, 'l': 0, 't': 0, 'b': 0
-        },
-        legend=dict(x=-0.1, y=1, xanchor="center"),
-    )
-    return fig
+
 
 
 def flat2image(
@@ -54,19 +45,8 @@ def flat2image(
     return X, Y, Z
 
 
-def input_check(string):
-    if string is None:
-        while string != 'q':
-            string = input(f'Set {string=}, to quit - q:')
-            string = string.strip()
-    return string
 
-def combinations_dict(diap: dict):
-    keys = list(diap.keys())
-    values = [diap[key] for key in keys]
-    combinations = list(_product(*values))
-    result = [dict(zip(keys, comb)) for comb in combinations]
-    return result
+
 
 
 def collect_dfs(datas, dfs, diap):

@@ -1,9 +1,7 @@
-import pandas as _pd
-import re as _re
-import mph as _mph
+import mph
 
 
-def compare(from_node: _mph.Node, to_node: _mph.Node):
+def compare(from_node: mph.Node, to_node: mph.Node):
     from_properties, to_properties = from_node.properties(), to_node.properties()
     all_properties = sorted(set(from_properties).union(set(to_properties)))
 
@@ -17,7 +15,7 @@ def compare(from_node: _mph.Node, to_node: _mph.Node):
         print(string)
 
 
-def copy_settings(from_node: _mph.Node, to_node: _mph.Node):
+def copy_settings(from_node: mph.Node, to_node: mph.Node):
     for i in range(2):
         from_properties, to_properties = from_node.properties(), to_node.properties()
 
@@ -34,7 +32,7 @@ def copy_settings(from_node: _mph.Node, to_node: _mph.Node):
             to_node.property(name=key, value=value)
 
 
-def copy_solver(from_solver: _mph.Node, to_solver: _mph.Node, verbose=False):
+def copy_solver(from_solver: mph.Node, to_solver: mph.Node, verbose=False):
     copy_settings(from_solver, to_solver)
 
     from_dict = {node.name(): node for node in from_solver.children()}
@@ -47,3 +45,11 @@ def copy_solver(from_solver: _mph.Node, to_solver: _mph.Node, verbose=False):
         if verbose:
             compare(from_node, to_node)
             print('*' * 120)
+
+
+def input_check(string):
+    if string is None:
+        while string != 'q':
+            string = input(f'Set {string=}, to quit - q:')
+            string = string.strip()
+    return string
