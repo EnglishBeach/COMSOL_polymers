@@ -1,6 +1,9 @@
 import numpy as _np
+import pandas as _pd
+
 import plotly.express as _px
 
+from itertools import product as _product
 from scipy.interpolate import griddata as _griddata
 from scipy.interpolate import RBFInterpolator as _RBFInterpolator
 
@@ -57,3 +60,20 @@ def input_check(string):
             string = input(f'Set {string=}, to quit - q:')
             string = string.strip()
     return string
+
+def combinations_dict(diap: dict):
+    keys = list(diap.keys())
+    values = [diap[key] for key in keys]
+    combinations = list(_product(*values))
+    result = [dict(zip(keys, comb)) for comb in combinations]
+    return result
+
+
+def collect_dfs(datas, dfs, diap):
+    result = _pd.DataFrame()
+    for i in range(len(datas)):
+        df = dfs[i]
+        params = datas.loc[i][diap]
+        df[diap] = list(params)
+        result = _pd.concat([result, df])
+    return result

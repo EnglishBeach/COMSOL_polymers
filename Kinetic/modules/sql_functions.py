@@ -1,9 +1,7 @@
 import pandas as _pd
 import mph as _mph
-
-from itertools import product as _product
-
 import comsol as _comsol
+
 import db_structure as _db_structure
 
 
@@ -69,21 +67,3 @@ def sweep_to_sql(
 
     assert _db_structure.db.is_connection_usable(), 'Database not connected'
     _db_structure.Solve.insert_many(notes).execute()
-
-
-def combinations_dict(diap: dict):
-    keys = list(diap.keys())
-    values = [diap[key] for key in keys]
-    combinations = list(_product(*values))
-    result = [dict(zip(keys, comb)) for comb in combinations]
-    return result
-
-
-def collect_dfs(datas, dfs, diap):
-    result = _pd.DataFrame()
-    for i in range(len(datas)):
-        df = dfs[i]
-        params = datas.loc[i][diap]
-        df[diap] = list(params)
-        result = _pd.concat([result, df])
-    return result
