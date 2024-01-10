@@ -1,9 +1,6 @@
 import numpy as _np
 import pandas as _pd
 
-import plotly.express as _px
-
-from itertools import product as _product
 from scipy.interpolate import griddata as _griddata
 from scipy.interpolate import RBFInterpolator as _RBFInterpolator
 
